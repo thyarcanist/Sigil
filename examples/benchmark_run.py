@@ -50,6 +50,13 @@ try:
 except ImportError as import_err:
     logging.warning(f"Could not import local QuantumTrueRandomGenerator: {import_err}")
     LOCAL_QRNG_AVAILABLE = False
+# --- Import EntropyAuditor ---
+try:
+    from src.idia.audit.entropy_audit import EntropyAuditor
+    AUDITOR_AVAILABLE = True
+except ImportError as import_err:
+    logging.warning(f"Could not import local EntropyAuditor: {import_err}")
+    AUDITOR_AVAILABLE = False
 # ------------------------------------
 
 # --- Constants ---
@@ -79,44 +86,65 @@ def get_entropy_data(source_name: str, size_bytes: int, use_local_engine: bool =
     logging.info(f"Getting data for source: {source_name} ({size_bytes} bytes)")
 
     # <<< Logic for using local engine >>>
-    if use_local_engine and source_name in ["ERIS:raw", "ERIS:full"]:
-        if LOCAL_QRNG_AVAILABLE:
-            logging.info(f"--- Using LOCAL QuantumTrueRandomGenerator for {source_name} --- ")
-            try:
-                local_engine = QuantumTrueRandomGenerator() # Instantiate local engine
-                # --- Get RAW bytes first ---
-                raw_data = local_engine.get_random_bytes(size_bytes)
-                if raw_data is None or len(raw_data) != size_bytes:
-                    logging.error(f"Local QRNG generated insufficient or None data ({len(raw_data) if raw_data else 'None'} bytes), expected {size_bytes}.")
-                    return None
-
-                # --- Apply Whitening ONLY for ERIS:full ---
-                if source_name == "ERIS:full":
-                    logging.info("Applying full whitening to local raw data...")
-                    try:
-                        # Pass raw_data (bytes) and expected output size
-                        # Use the direct import again
-                        whitened_data_np = apply_full_whitening(raw_data, output_size=size_bytes)
-                        data = whitened_data_np.tobytes() # Convert result to bytes
-
-                        if len(data) == size_bytes:
-                             logging.info("Full whitening applied successfully locally.")
-                             return data
+    if use_local_engine:
+        if source_name == "ERIS:raw":
+            if LOCAL_QRNG_AVAILABLE and AUDITOR_AVAILABLE:
+                logging.info("--- Using LOCAL EntropyAuditor for ERIS:raw ---")
+                try:
+                    # Use EntropyAuditor path to mimic generate_bit_viz
+                    auditor = EntropyAuditor(source_spec="eris:raw",
+                                             sample_size=size_bytes,
+                                             num_samples=1, # We only need one large sample
+                                             chunk_size_samples=1)
+                    _ = auditor.run_all_tests() # Fetch and process data internally
+                    if hasattr(auditor, 'processed_data') and auditor.processed_data is not None:
+                        if len(auditor.processed_data) >= size_bytes: # Check if enough data was returned
+                            logging.info("Successfully retrieved data via EntropyAuditor.")
+                            return auditor.processed_data[:size_bytes] # Return requested amount
                         else:
-                             logging.error(f"Local whitening resulted in unexpected size: {len(data)} bytes, expected {size_bytes}.")
-                             return None
-                    except Exception as e_whitening:
-                        logging.error(f"Error applying full whitening locally: {e_whitening}", exc_info=True)
+                            logging.error(f"EntropyAuditor returned insufficient data: got {len(auditor.processed_data)}, expected {size_bytes}.")
+                            return None
+                    else:
+                        logging.error("EntropyAuditor failed to produce processed data.")
                         return None
-                else: # ERIS:raw
-                    logging.info("Returning raw data for ERIS:raw (local engine).")
-                    return raw_data # Return raw bytes directly
-
-            except Exception as e_local_qrng:
-                logging.error(f"Error using local QuantumTrueRandomGenerator: {e_local_qrng}", exc_info=True)
+                except Exception as e_auditor:
+                    logging.error(f"Error using local EntropyAuditor: {e_auditor}", exc_info=True)
+                    return None
+            else:
+                logging.error("Local QRNG or EntropyAuditor not available. Cannot run ERIS:raw locally.")
                 return None
+        
+        elif source_name == "ERIS:full":
+            if LOCAL_QRNG_AVAILABLE:
+                logging.info("--- Using LOCAL QRNG + Whitening for ERIS:full ---")
+                try:
+                    # Fetch RAW data first
+                    local_engine = QuantumTrueRandomGenerator()
+                    raw_data = local_engine.get_random_bytes(size_bytes)
+                    if raw_data is None or len(raw_data) != size_bytes:
+                        logging.error(f"Local QRNG generated insufficient raw data for whitening.")
+                        return None
+                    
+                    # Apply whitening
+                    logging.info("Applying full whitening to local raw data...")
+                    whitened_data_np = apply_full_whitening(raw_data, output_size=size_bytes)
+                    data = whitened_data_np.tobytes()
+                    
+                    if len(data) == size_bytes:
+                        logging.info("Full whitening applied successfully locally.")
+                        return data
+                    else:
+                        logging.error(f"Local whitening resulted in unexpected size: {len(data)} bytes")
+                        return None
+                except Exception as e_local_full:
+                    logging.error(f"Error generating local ERIS:full data: {e_local_full}", exc_info=True)
+                    return None
+            else:
+                 logging.error("Local QRNG not available. Cannot run ERIS:full locally.")
+                 return None
         else:
-            logging.error(f"Local engine requested for {source_name}, but local QRNG is not available (Import failed). Skipping.")
+            # Handle potential future local sources if needed
+            logging.error(f"Local engine mode not implemented for source: {source_name}")
             return None
     # <<< End local engine logic >>>
 

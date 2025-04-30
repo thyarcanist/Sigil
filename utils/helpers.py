@@ -15,26 +15,26 @@ def bytes_to_bit_array(data: bytes, width: int, height: int):
     Raises:
         ValueError: If insufficient data is provided for the specified dimensions.
     """
-    num_pixels = width * height
-    num_bits_needed = num_pixels
-    num_bytes_needed = math.ceil(num_bits_needed / 8)
+    num_pixels_target = width * height
 
-    if len(data) < num_bytes_needed:
-        raise ValueError(f"Insufficient data: Need {num_bytes_needed} bytes for a {width}x{height} array, got {len(data)}.")
+    # Check if we have at least enough bytes for the target pixels
+    min_bytes_needed = math.ceil(num_pixels_target / 8)
+    if len(data) < min_bytes_needed:
+         raise ValueError(f"Insufficient data: Need at least {min_bytes_needed} bytes for {width}x{height} image, got {len(data)}.")
 
-    # Extract needed bytes
-    data_bytes = data[:num_bytes_needed]
+    # Unpack ALL provided bytes using numpy (LSB-first by default)
+    bits_array_flat = np.unpackbits(np.frombuffer(data, dtype=np.uint8))
+    total_bits_available = len(bits_array_flat)
 
-    # Convert bytes to a flat list of bits
-    bits = []
-    for byte in data_bytes:
-        bits.extend([(byte >> i) & 1 for i in range(7, -1, -1)]) # MSB first
-    
-    # Trim excess bits if num_bits_needed is not a multiple of 8
-    bits = bits[:num_bits_needed]
-    
+    if total_bits_available < num_pixels_target:
+        # This shouldn't happen if the initial byte check passed, but safety check
+        raise ValueError(f"Unpacking resulted in fewer bits ({total_bits_available}) than needed ({num_pixels_target}).")
+
+    # Trim the flat BIT array to the exact number of pixels needed
+    bits_to_plot = bits_array_flat[:num_pixels_target]
+
     # Reshape into 2D array
-    bit_array = np.array(bits, dtype=np.uint8).reshape((height, width))
-    return bit_array
+    bit_array = bits_to_plot.reshape((height, width))
+    return bit_array.astype(np.uint8) # Ensure correct dtype
 
 # TODO: Add other helper functions like entropy calculation, statistical tests etc.
