@@ -94,92 +94,116 @@ def run_analysis_on_data(data_bytes: bytes, label: str, output_dir: str, width: 
     try:
         # Common setup for image-based analysis
         has_enough_data_for_images = (len(data_bytes) * 8 >= width * height)
-
+        bit_array = None # Initialize bit_array
         if not has_enough_data_for_images:
             logging.warning(f"Warning: Not enough data ({len(data_bytes)} bytes) for a full {width}x{height} analysis. Skipping image-based analyses.")
-            bit_array = None
         else:
-             bit_array = bytes_to_bit_array(data_bytes, width, height)
+            try:
+                bit_array = bytes_to_bit_array(data_bytes, width, height)
+            except MemoryError:
+                logging.error(f"MemoryError converting bytes to bit_array for {label}. Skipping image-based analyses.")
+                bit_array = None # Ensure bit_array is None if conversion fails
+            except ValueError as ve_bitarray:
+                logging.error(f"ValueError converting bytes to bit_array for {label}: {ve_bitarray}. Skipping image-based analyses.")
+                bit_array = None
 
         # Run Visual Analysis
         if bit_array is not None:
-            logging.info("Generating bit visualization...")
-            viz_path = os.path.join(output_dir, f"{label}_bit_visualization_{width}x{height}.png")
-            # Pass data_bytes directly to the updated visualizer if needed, or keep bit_array
-            # Assuming visualizer needs the raw bytes and dimensions
-            # generate_bit_visualization(data_bytes, width, height, viz_path) # If visualizer takes bytes
-            # If visualizer takes bit array directly:
-            # Recreate image from bit_array for generate_bit_visualization
-            from PIL import Image
-            img = Image.fromarray((bit_array * 255).astype(np.uint8), 'L')
-            img.save(viz_path)
-            analysis_results['visual_path'] = viz_path
-            logging.info(f"Bit visualization saved to: {viz_path}")
-        else:
-            logging.info("Skipping visual analysis due to insufficient data.")
+            try:
+                logging.info("Generating bit visualization...")
+                viz_path = os.path.join(output_dir, f"{label.replace(':', '_')}_bit_visualization_{width}x{height}.png") # Sanitize label
+                from PIL import Image
+                img = Image.fromarray((bit_array * 255).astype(np.uint8), 'L')
+                img.save(viz_path)
+                analysis_results['visual_path'] = viz_path # Record path only on success
+                logging.info(f"Bit visualization saved to: {viz_path}")
+            except MemoryError:
+                logging.error(f"MemoryError generating/saving visual analysis for {label}.")
+            except Exception as e_visual:
+                logging.error(f"Error during visual analysis for {label}: {e_visual}")
+        # else: # No need for else if bit_array is None, handled by initial check
+            # logging.info("Skipping visual analysis due to insufficient data or bit_array error.")
 
         # Run FFT Analysis
         if bit_array is not None:
-            logging.info("Performing FFT analysis...")
-            fft_result = fft_log_magnitude(bit_array)
-            fft_plot_path = os.path.join(output_dir, f"{label}_fft_spectrum_{width}x{height}.png")
-            import matplotlib.pyplot as plt # Keep import local? Or move to top? Move to top is cleaner.
-            plt.figure(figsize=(8, 8)) # Consistent figure size
-            plt.imshow(fft_result, cmap="viridis")
-            plt.colorbar()
-            plt.title(f"FFT Magnitude Spectrum - {label}")
-            plt.savefig(fft_plot_path)
-            plt.close() # Close the figure to free memory
-            logging.info(f"FFT spectrum saved to: {fft_plot_path}")
-            analysis_results['fft_path'] = fft_plot_path
-        else:
-            logging.info("Skipping FFT analysis due to insufficient data.")
+            try:
+                logging.info("Performing FFT analysis...")
+                fft_result = fft_log_magnitude(bit_array) # Potential MemoryError here
+                fft_plot_path = os.path.join(output_dir, f"{label.replace(':', '_')}_fft_spectrum_{width}x{height}.png") # Sanitize label
+                import matplotlib.pyplot as plt
+                plt.figure(figsize=(8, 8))
+                plt.imshow(fft_result, cmap="viridis")
+                plt.colorbar()
+                plt.title(f"FFT Magnitude Spectrum - {label}")
+                plt.savefig(fft_plot_path)
+                plt.close()
+                analysis_results['fft_path'] = fft_plot_path # Record path only on success
+                logging.info(f"FFT spectrum saved to: {fft_plot_path}")
+            except MemoryError:
+                logging.error(f"MemoryError during FFT analysis/plotting for {label}.")
+            except Exception as e_fft:
+                logging.error(f"Error during FFT analysis for {label}: {e_fft}")
+        # else:
+            # logging.info("Skipping FFT analysis due to insufficient data or bit_array error.")
 
         # Run Wavelet Analysis
         if bit_array is not None:
-            logging.info("Performing Wavelet analysis...")
-            wavelet_result = wavelet_decompose(bit_array)
-            wavelet_plot_path = os.path.join(output_dir, f"{label}_wavelet_decomp_{width}x{height}.png")
-            plt.figure(figsize=(8, 8)) # Consistent figure size
-            plt.imshow(wavelet_result, cmap='gray')
-            plt.title(f"Wavelet Decomposition - {label}")
-            plt.savefig(wavelet_plot_path)
-            plt.close()
-            logging.info(f"Wavelet decomposition saved to: {wavelet_plot_path}")
-            analysis_results['wavelet_path'] = wavelet_plot_path
-        else:
-             logging.info("Skipping Wavelet analysis due to insufficient data.")
+            try:
+                logging.info("Performing Wavelet analysis...")
+                wavelet_result = wavelet_decompose(bit_array) # Potential MemoryError here
+                wavelet_plot_path = os.path.join(output_dir, f"{label.replace(':', '_')}_wavelet_decomp_{width}x{height}.png") # Sanitize label
+                import matplotlib.pyplot as plt
+                plt.figure(figsize=(8, 8))
+                plt.imshow(wavelet_result, cmap='gray')
+                plt.title(f"Wavelet Decomposition - {label}")
+                plt.savefig(wavelet_plot_path)
+                plt.close()
+                analysis_results['wavelet_path'] = wavelet_plot_path # Record path only on success
+                logging.info(f"Wavelet decomposition saved to: {wavelet_plot_path}")
+            except MemoryError:
+                logging.error(f"MemoryError during Wavelet analysis/plotting for {label}.")
+            except Exception as e_wavelet:
+                 logging.error(f"Error during Wavelet analysis for {label}: {e_wavelet}")
+        # else:
+             # logging.info("Skipping Wavelet analysis due to insufficient data or bit_array error.")
 
-        # Run Stats Analysis
+        # Run Stats Analysis (Assuming less memory intensive)
         logging.info("Performing Frequency (Monobit) Test...")
         freq_test_result = frequency_monobit_test(data_bytes)
         analysis_results['stats']['frequency_monobit'] = freq_test_result
-
         logging.info("Performing Chi-Square Byte Distribution Test...")
         chisq_test_result = chi_square_byte_distribution_test(data_bytes)
         analysis_results['stats']['chi_square_byte'] = chisq_test_result
-
         logging.info("Performing Runs Test...")
         runs_test_result = runs_test(data_bytes)
         analysis_results['stats']['runs'] = runs_test_result
 
         # TODO: Add calls to other Stats Analyzers
 
-        # Generate Report
-        logging.info("Generating analysis summary...")
-        # Sanitize label for filename
-        safe_label = label.replace(":", "_").replace("/", "_")
-        summary_path = os.path.join(output_dir, f"{safe_label}_analysis_summary.txt")
-        generate_text_summary(analysis_results, summary_path)
-
-    except ValueError as ve:
-        logging.error(f"Error processing {label}: {ve}")
-    except IOError as ioe:
-        logging.error(f"Error during file operation for {label}: {ioe}")
-    except ImportError as ie:
-        logging.error(f"Import Error: Make sure all dependencies are installed ({ie})")
+    # --- Keep the outer broad exception handler for unexpected issues --- #
+    except MemoryError:
+        # This catches MemoryError if it happens *outside* the specific analysis blocks
+        # (e.g., maybe during initial setup within the main try)
+        logging.error(f"MEMORY ERROR occurred processing {label}. Cannot proceed with analysis.")
+        # Reset image paths if error happened before summary generation
+        analysis_results['visual_path'] = None
+        analysis_results['fft_path'] = None
+        analysis_results['wavelet_path'] = None
     except Exception as e:
-        logging.error(f"An unexpected error occurred during analysis for {label}: {e}", exc_info=True)
+        logging.error(f"An unexpected general error occurred during analysis for {label}: {e}", exc_info=True)
+        # Reset image paths if error happened before summary generation
+        analysis_results['visual_path'] = None
+        analysis_results['fft_path'] = None
+        analysis_results['wavelet_path'] = None
+    # ------------------------------------------------------------------- #
+
+    # Generate Report (always attempt to generate, using None for paths if saving failed)
+    logging.info("Generating analysis summary...")
+    # Sanitize label for filename
+    safe_label = label.replace(":", "_").replace("/", "_")
+    summary_path = os.path.join(output_dir, f"{safe_label}_analysis_summary.txt")
+    # Pass the potentially updated analysis_results (with None for paths if errors occurred)
+    generate_text_summary(analysis_results, summary_path)
 
     logging.info(f"--- Analysis complete for: {label} ---\n")
 

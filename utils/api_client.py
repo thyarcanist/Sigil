@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # MAX_BYTES_PER_REQUEST = 256 * 1024  # Try 256 KiB chunk size - Still too large
 MAX_BYTES_PER_REQUEST = 120 * 1024  # Set below documented ~124KB limit
 MAX_RETRIES = 3
-REQUEST_TIMEOUT = 120 # seconds (existing value)
+REQUEST_TIMEOUT = 180 # seconds (Increased timeout)
 RETRY_DELAY_SECONDS = 2
 CHUNK_DELAY_SECONDS = 1
 MIN_REQUEST_SIZE_WORKAROUND = 24 # From user code example
@@ -63,24 +63,36 @@ def fetch_entropy_from_api(endpoint: str, total_bytes_needed: int) -> Optional[b
         logging.info("Requested 0 or fewer bytes, returning empty bytes.")
         return b''
 
+    # --- Determine Chunk Size Based on Endpoint ---
+    # /invoke (whitened) is more intensive, use smaller chunks
+    if endpoint == '/api/eris/invoke':
+        current_max_bytes_per_request = 60 * 1024 # 60 KiB for invoke
+        logging.info(f"Using smaller chunk size ({current_max_bytes_per_request} bytes) for {endpoint}")
+    else:
+        current_max_bytes_per_request = MAX_BYTES_PER_REQUEST # Use default (120 KiB) for others
+    # --------------------------------------------
+
     # --- Workaround for potential API base64 padding errors on small requests ---
     # Only apply if the total needed is small AND fits within one chunk.
     bytes_to_actually_request = total_bytes_needed
-    if total_bytes_needed < MIN_REQUEST_SIZE_WORKAROUND and total_bytes_needed < MAX_BYTES_PER_REQUEST:
+    # Use the endpoint-specific chunk size for this check
+    if total_bytes_needed < MIN_REQUEST_SIZE_WORKAROUND and total_bytes_needed < current_max_bytes_per_request:
         bytes_to_actually_request = MIN_REQUEST_SIZE_WORKAROUND
         logging.info(f"Workaround: Adjusted request size from {total_bytes_needed} to {bytes_to_actually_request} to potentially avoid API padding errors.")
 
     all_fetched_bytes = bytearray()
-    num_chunks = math.ceil(bytes_to_actually_request / MAX_BYTES_PER_REQUEST)
+    # Calculate num_chunks based on the potentially adjusted request size and endpoint-specific chunk size
+    num_chunks = math.ceil(bytes_to_actually_request / current_max_bytes_per_request)
     base_url = api_url_base.rstrip('/')
     full_endpoint_base = f"{base_url}{endpoint}"
 
-    logging.info(f"Starting fetch for {total_bytes_needed} bytes (requesting {bytes_to_actually_request}) from {endpoint} in {num_chunks} chunk(s)...")
+    logging.info(f"Starting fetch for {total_bytes_needed} bytes (requesting {bytes_to_actually_request}) from {endpoint} in {num_chunks} chunk(s) of max size {current_max_bytes_per_request}...") # Log max size
 
     for i in range(num_chunks):
         # Calculate size for this chunk based on the *potentially adjusted* total request size
         bytes_remaining_to_request = bytes_to_actually_request - len(all_fetched_bytes)
-        bytes_to_request_this_chunk = min(bytes_remaining_to_request, MAX_BYTES_PER_REQUEST)
+        # Use endpoint-specific chunk size here
+        bytes_to_request_this_chunk = min(bytes_remaining_to_request, current_max_bytes_per_request)
 
         if bytes_to_request_this_chunk <= 0:
             logging.info("All requested bytes seem to have been fetched in previous chunks.")
@@ -178,7 +190,7 @@ if __name__ == "__main__":
     if raw_data:
         print(f"  Success! Received {len(raw_data)} bytes. Hex: {raw_data.hex()}")
     else:
-        print("  Failed to fetch eris:raw data. Check logs and environment variables.")
+        print("  Failed to fetch eris:raw data. Check logs and environment variables.") 
 
     # Test Chunking
     print(f"\nAttempting to fetch {large_test_size} bytes of eris:raw (testing chunking)...")
