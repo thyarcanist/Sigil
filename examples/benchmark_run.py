@@ -58,7 +58,7 @@ except ImportError as import_err:
 # DATA_SIZE_BYTES = math.ceil(WIDTH * HEIGHT / 8) # Calculate bytes needed
 WIDTH = 3000
 HEIGHT = 3000
-DATA_SIZE_BYTES = 1125000 # Explicitly calculated for 3000x3000
+DATA_SIZE_BYTES = 1152000 # Match the byte size from generate_bit_viz command
 # DATA_SIZE_BYTES = 1024 * 1024 # 1 MiB - Previous value
 # WIDTH = HEIGHT = int(math.sqrt(DATA_SIZE_BYTES * 8)) # Calculate square dimensions for 1MB
 OUTPUT_DIR = "./sigil_benchmark_output"
