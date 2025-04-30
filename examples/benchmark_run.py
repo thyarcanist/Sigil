@@ -5,6 +5,7 @@ import math # Need math for ceiling calculation
 import random # Need standard PRNG
 import logging # Added for better status messages
 from typing import Optional # <--- Add this import
+import argparse # <<< Added for command-line arguments
 
 # --- Path Setup ---
 # Adjust path to import from the parent directory (SIGIL)
@@ -34,6 +35,7 @@ from loaders.entropy_input import load_from_binary_file # Keep for file loading 
 from utils.helpers import bytes_to_bit_array
 # Import API client functions
 from utils.api_client import fetch_eris_full, fetch_eris_raw
+from src.idia.entropy_whitening import apply_full_whitening # <<< CORRECT path relative to project root
 from analyzers.fft import fft_log_magnitude # Keep FFT
 from analyzers.wavelet import wavelet_decompose # Keep Wavelet
 from analyzers.visual import generate_bit_visualization # Keep Visual
@@ -41,7 +43,14 @@ from analyzers.visual import generate_bit_visualization # Keep Visual
 from analyzers.stats import frequency_monobit_test, chi_square_byte_distribution_test, runs_test
 # Import the report generator
 from report.summary import generate_text_summary
-# ---------------------------
+# --- Import Local QRNG (conditional) ---
+try:
+    from src.utils.lattice_framework.qrng import QuantumTrueRandomGenerator
+    LOCAL_QRNG_AVAILABLE = True
+except ImportError as import_err:
+    logging.warning(f"Could not import local QuantumTrueRandomGenerator: {import_err}")
+    LOCAL_QRNG_AVAILABLE = False
+# ------------------------------------
 
 # --- Constants ---
 # Set default data size (e.g., ~1.1MB for 3000x3000, or 1MB)
@@ -52,12 +61,67 @@ WIDTH = HEIGHT = int(math.sqrt(DATA_SIZE_BYTES * 8)) # Calculate square dimensio
 OUTPUT_DIR = "./sigil_benchmark_output"
 # -----------------
 
-def get_entropy_data(source_name: str, size_bytes: int) -> Optional[bytes]:
-    """Fetches or generates entropy data based on the source name."""
+def get_entropy_data(source_name: str, size_bytes: int, use_local_engine: bool = False) -> Optional[bytes]:
+    """Fetches or generates entropy data based on the source name.
+
+    Args:
+        source_name: The identifier for the entropy source.
+        size_bytes: The number of bytes to fetch/generate.
+        use_local_engine: If True, use local QRNG for ERIS sources.
+
+    Returns:
+        Bytes object containing the entropy data, or None on failure.
+    """
     logging.info(f"Getting data for source: {source_name} ({size_bytes} bytes)")
-    if source_name == "ERIS:full":
+
+    # <<< Logic for using local engine >>>
+    if use_local_engine and source_name in ["ERIS:raw", "ERIS:full"]:
+        if LOCAL_QRNG_AVAILABLE:
+            logging.info(f"--- Using LOCAL QuantumTrueRandomGenerator for {source_name} --- ")
+            try:
+                local_engine = QuantumTrueRandomGenerator() # Instantiate local engine
+                # --- Get RAW bytes first ---
+                raw_data = local_engine.get_random_bytes(size_bytes)
+                if raw_data is None or len(raw_data) != size_bytes:
+                    logging.error(f"Local QRNG generated insufficient or None data ({len(raw_data) if raw_data else 'None'} bytes), expected {size_bytes}.")
+                    return None
+
+                # --- Apply Whitening ONLY for ERIS:full ---
+                if source_name == "ERIS:full":
+                    logging.info("Applying full whitening to local raw data...")
+                    try:
+                        # Pass raw_data (bytes) and expected output size
+                        # Use the direct import again
+                        whitened_data_np = apply_full_whitening(raw_data, output_size=size_bytes)
+                        data = whitened_data_np.tobytes() # Convert result to bytes
+
+                        if len(data) == size_bytes:
+                             logging.info("Full whitening applied successfully locally.")
+                             return data
+                        else:
+                             logging.error(f"Local whitening resulted in unexpected size: {len(data)} bytes, expected {size_bytes}.")
+                             return None
+                    except Exception as e_whitening:
+                        logging.error(f"Error applying full whitening locally: {e_whitening}", exc_info=True)
+                        return None
+                else: # ERIS:raw
+                    logging.info("Returning raw data for ERIS:raw (local engine).")
+                    return raw_data # Return raw bytes directly
+
+            except Exception as e_local_qrng:
+                logging.error(f"Error using local QuantumTrueRandomGenerator: {e_local_qrng}", exc_info=True)
+                return None
+        else:
+            logging.error(f"Local engine requested for {source_name}, but local QRNG is not available (Import failed). Skipping.")
+            return None
+    # <<< End local engine logic >>>
+
+    # <<< Original API/PRNG logic >>>
+    elif source_name == "ERIS:full":
+        # Fetch using API client (chunking handled within)
         return fetch_eris_full(size_bytes)
     elif source_name == "ERIS:raw":
+        # Fetch using API client (chunking handled within)
         return fetch_eris_raw(size_bytes)
     elif source_name == "PRNG":
         # Use standard library 'random' for basic PRNG
@@ -209,7 +273,23 @@ def run_analysis_on_data(data_bytes: bytes, label: str, output_dir: str, width: 
 
 
 if __name__ == "__main__":
+    # <<< Setup Argument Parser >>>
+    parser = argparse.ArgumentParser(description="Run SIGIL benchmark analyses on entropy sources.")
+    parser.add_argument(
+        '--local-engine',
+        action='store_true',
+        help='Use local QuantumTrueRandomGenerator for ERIS sources instead of API calls.'
+    )
+    args = parser.parse_args()
+    # <<< End Argument Parser Setup >>>
+
     logging.info("Starting SIGIL Benchmark Run...")
+    if args.local_engine:
+        logging.info("*** LOCAL ENGINE MODE ACTIVATED ***")
+        if not LOCAL_QRNG_AVAILABLE:
+            logging.error("Local engine mode requested, but the required local QRNG module could not be imported. Exiting.")
+            sys.exit(1)
+
     # Ensure matplotlib is imported if needed by analysis functions
     try:
         import matplotlib.pyplot as plt
@@ -223,7 +303,7 @@ if __name__ == "__main__":
     # Run analysis on each source
     for source_label in data_sources_to_run:
         # Get data for the current source
-        entropy_data = get_entropy_data(source_label, DATA_SIZE_BYTES)
+        entropy_data = get_entropy_data(source_label, DATA_SIZE_BYTES, use_local_engine=args.local_engine)
 
         if entropy_data:
             if len(entropy_data) == DATA_SIZE_BYTES:

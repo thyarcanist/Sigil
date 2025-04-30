@@ -3,9 +3,9 @@ Source File: Unknown File
 ------------------------------------------
 
 [Statistical Tests]
-  Frequency (Monobit): s_obs: 0.441942, p_value: 0.658531, n_zeros: 4194944, n_ones: 4193664, passed: True, notes: Bits: 8388608, Zeros: 4194944, Ones: 4193664
-  Chi-Square (Bytes):  chisq_stat: 256.406250, p_value: 0.463481, dof: 255, passed: True, notes: Bytes: 1048576
-  Runs Test:           v_n_obs: 4193271, p_value: 0.475688, passed: True, notes: Bits: 8388608, pi: 0.4999, Runs: 4193271
+  Frequency (Monobit): s_obs: 0.923934, p_value: 0.355520, n_zeros: 4195642, n_ones: 4192966, passed: True, notes: Bits: 8388608, Zeros: 4195642, Ones: 4192966
+  Chi-Square (Bytes):  chisq_stat: 276.599121, p_value: 0.168526, dof: 255, passed: True, notes: Bytes: 1048576
+  Runs Test:           v_n_obs: 4193752, p_value: 0.703292, passed: True, notes: Bits: 8388608, pi: 0.4998, Runs: 4193752
 
 [Visual & Transform Outputs]
   Bit Visualization: ./sigil_benchmark_output\CSPRNG_bit_visualization_2896x2896.png
