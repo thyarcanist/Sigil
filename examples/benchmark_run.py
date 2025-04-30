@@ -56,9 +56,10 @@ except ImportError as import_err:
 # Set default data size (e.g., ~1.1MB for 3000x3000, or 1MB)
 # WIDTH, HEIGHT = 3000, 3000 # Set desired dimensions
 # DATA_SIZE_BYTES = math.ceil(WIDTH * HEIGHT / 8) # Calculate bytes needed
-WIDTH = 3000
-HEIGHT = 3000
+WIDTH = 3035 # Match generate_bit_viz for 1152000 bytes
+HEIGHT = 3035 # Match generate_bit_viz for 1152000 bytes
 DATA_SIZE_BYTES = 1152000 # Match the byte size from generate_bit_viz command
+# DATA_SIZE_BYTES = 1125000 # Explicitly calculated for 3000x3000
 # DATA_SIZE_BYTES = 1024 * 1024 # 1 MiB - Previous value
 # WIDTH = HEIGHT = int(math.sqrt(DATA_SIZE_BYTES * 8)) # Calculate square dimensions for 1MB
 OUTPUT_DIR = "./sigil_benchmark_output"
@@ -178,10 +179,22 @@ def run_analysis_on_data(data_bytes: bytes, label: str, output_dir: str, width: 
         if bit_array is not None:
             try:
                 logging.info("Generating bit visualization...")
-                viz_path = os.path.join(output_dir, f"{label.replace(':', '_')}_bit_visualization_{width}x{height}.png") # Sanitize label
+                # Use consistent file naming, width/height are already defined
+                safe_label = label.replace(':', '_').replace('/', '_')
+                viz_path = os.path.join(output_dir, f"{safe_label}_bit_visualization_{width}x{height}.png")
                 from PIL import Image
                 img = Image.fromarray((bit_array * 255).astype(np.uint8), 'L')
-                img.save(viz_path)
+                # --- Add title matching generate_bit_viz --- #
+                import matplotlib.pyplot as plt
+                fig_bits, ax_bits = plt.subplots(figsize=(8, 8))
+                ax_bits.imshow(img, cmap='binary', interpolation='none')
+                ax_bits.set_xticks([])
+                ax_bits.set_yticks([])
+                ax_bits.set_title(f"Bit Visualization - {label} ({width}x{height})", fontsize=14) # Match generate_bit_viz title
+                plt.savefig(viz_path, bbox_inches='tight', dpi=150) # Save figure, not raw image
+                plt.close(fig_bits) # Close the figure
+                # img.save(viz_path) # Original save method
+                # --- End Title/Save Change ---
                 analysis_results['visual_path'] = viz_path # Record path only on success
                 logging.info(f"Bit visualization saved to: {viz_path}")
             except MemoryError:
@@ -196,12 +209,13 @@ def run_analysis_on_data(data_bytes: bytes, label: str, output_dir: str, width: 
             try:
                 logging.info("Performing FFT analysis...")
                 fft_result = fft_log_magnitude(bit_array) # Potential MemoryError here
-                fft_plot_path = os.path.join(output_dir, f"{label.replace(':', '_')}_fft_spectrum_{width}x{height}.png") # Sanitize label
+                fft_plot_path = os.path.join(output_dir, f"{safe_label}_fft_spectrum_{width}x{height}.png") # Sanitize label
                 import matplotlib.pyplot as plt
                 plt.figure(figsize=(8, 8))
                 plt.imshow(fft_result, cmap="viridis")
                 plt.colorbar()
-                plt.title(f"FFT Magnitude Spectrum - {label}")
+                # plt.title(f"FFT Magnitude Spectrum - {label}") # Original title
+                plt.title(f"FFT Magnitude Spectrum (Log Scale) - {label}", fontsize=12) # Match generate_bit_viz title
                 plt.savefig(fft_plot_path)
                 plt.close()
                 analysis_results['fft_path'] = fft_plot_path # Record path only on success
@@ -218,11 +232,15 @@ def run_analysis_on_data(data_bytes: bytes, label: str, output_dir: str, width: 
             try:
                 logging.info("Performing Wavelet analysis...")
                 wavelet_result = wavelet_decompose(bit_array) # Potential MemoryError here
-                wavelet_plot_path = os.path.join(output_dir, f"{label.replace(':', '_')}_wavelet_decomp_{width}x{height}.png") # Sanitize label
+                wavelet_plot_path = os.path.join(output_dir, f"{safe_label}_wavelet_decomp_{width}x{height}.png") # Sanitize label
                 import matplotlib.pyplot as plt
                 plt.figure(figsize=(8, 8))
                 plt.imshow(wavelet_result, cmap='gray')
-                plt.title(f"Wavelet Decomposition - {label}")
+                # plt.title(f"Wavelet Decomposition - {label}") # Original title
+                # Match generate_bit_viz title (assuming db4, 4 levels from analyzer)
+                wavelet_type = 'db4'
+                decomp_levels = 4
+                plt.title(f"Wavelet Decomposition ({wavelet_type}, {decomp_levels} Levels) - {label}", fontsize=14)
                 plt.savefig(wavelet_plot_path)
                 plt.close()
                 analysis_results['wavelet_path'] = wavelet_plot_path # Record path only on success
