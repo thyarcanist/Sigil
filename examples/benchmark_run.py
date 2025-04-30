@@ -54,10 +54,13 @@ except ImportError as import_err:
 
 # --- Constants ---
 # Set default data size (e.g., ~1.1MB for 3000x3000, or 1MB)
-# WIDTH, HEIGHT = 3000, 3000
-# DATA_SIZE_BYTES = math.ceil(WIDTH * HEIGHT / 8)
-DATA_SIZE_BYTES = 1024 * 1024 # 1 MiB
-WIDTH = HEIGHT = int(math.sqrt(DATA_SIZE_BYTES * 8)) # Calculate square dimensions for 1MB
+# WIDTH, HEIGHT = 3000, 3000 # Set desired dimensions
+# DATA_SIZE_BYTES = math.ceil(WIDTH * HEIGHT / 8) # Calculate bytes needed
+WIDTH = 3000
+HEIGHT = 3000
+DATA_SIZE_BYTES = 1125000 # Explicitly calculated for 3000x3000
+# DATA_SIZE_BYTES = 1024 * 1024 # 1 MiB - Previous value
+# WIDTH = HEIGHT = int(math.sqrt(DATA_SIZE_BYTES * 8)) # Calculate square dimensions for 1MB
 OUTPUT_DIR = "./sigil_benchmark_output"
 # -----------------
 
