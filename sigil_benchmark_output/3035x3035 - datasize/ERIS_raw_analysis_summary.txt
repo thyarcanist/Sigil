@@ -1,0 +1,15 @@
+=== SIGIL Analysis Summary for: ERIS:raw ===
+Source File: Unknown File
+--------------------------------------------
+
+[Statistical Tests]
+  Frequency (Monobit): s_obs: 969.452215, p_value: 0.000000, n_zeros: 6079525, n_ones: 3136475, passed: False, notes: Bits: 9216000, Zeros: 6079525, Ones: 3136475
+  Chi-Square (Bytes):  chisq_stat: 6249305.008889, p_value: 0.000000, dof: 255, passed: False, notes: Bytes: 1152000
+  Runs Test:           v_n_obs: N/A, p_value: N/A, passed: N/A, notes: Frequency test prerequisite failed (|pi - 0.5| = 0.1597 >= tau = 0.0007)
+
+[Visual & Transform Outputs]
+  Bit Visualization: ./sigil_benchmark_output\ERIS_raw_bit_visualization_3035x3035.png
+  FFT Spectrum Plot: ./sigil_benchmark_output\ERIS_raw_fft_spectrum_3035x3035.png
+  Wavelet Decomp Plot: ./sigil_benchmark_output\ERIS_raw_wavelet_decomp_3035x3035.png
+
+=== End of Summary ===

@@ -1,0 +1,15 @@
+=== SIGIL Analysis Summary for: CSPRNG ===
+Source File: Unknown File
+------------------------------------------
+
+[Statistical Tests]
+  Frequency (Monobit): s_obs: 1.099550, p_value: 0.271528, n_zeros: 4606331, n_ones: 4609669, passed: True, notes: Bits: 9216000, Zeros: 4606331, Ones: 4609669
+  Chi-Square (Bytes):  chisq_stat: 253.642222, p_value: 0.512242, dof: 255, passed: True, notes: Bytes: 1152000
+  Runs Test:           v_n_obs: 4606805, p_value: 0.431354, passed: True, notes: Bits: 9216000, pi: 0.5002, Runs: 4606805
+
+[Visual & Transform Outputs]
+  Bit Visualization: ./sigil_benchmark_output\CSPRNG_bit_visualization_3035x3035.png
+  FFT Spectrum Plot: ./sigil_benchmark_output\CSPRNG_fft_spectrum_3035x3035.png
+  Wavelet Decomp Plot: ./sigil_benchmark_output\CSPRNG_wavelet_decomp_3035x3035.png
+
+=== End of Summary ===
