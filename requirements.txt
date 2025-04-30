@@ -1,0 +1,8 @@
+numpy
+scipy
+pywavelets
+matplotlib
+Pillow
+bitarray
+requests
+python-dotenv
