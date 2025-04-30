@@ -3,13 +3,13 @@ Source File: Unknown File
 ----------------------------------------
 
 [Statistical Tests]
-  Frequency (Monobit): s_obs: 0.334218, p_value: 0.738215, n_zeros: 4194788, n_ones: 4193820, passed: True, notes: Bits: 8388608, Zeros: 4194788, Ones: 4193820
-  Chi-Square (Bytes):  chisq_stat: 255.830078, p_value: 0.473595, dof: 255, passed: True, notes: Bytes: 1048576
-  Runs Test:           v_n_obs: 4195760, p_value: 0.314677, passed: True, notes: Bits: 8388608, pi: 0.4999, Runs: 4195760
+  Frequency (Monobit): s_obs: 0.900667, p_value: 0.367766, n_zeros: 4498649, n_ones: 4501351, passed: True, notes: Bits: 9000000, Zeros: 4498649, Ones: 4501351
+  Chi-Square (Bytes):  chisq_stat: 224.466204, p_value: 0.916254, dof: 255, passed: True, notes: Bytes: 1125000
+  Runs Test:           v_n_obs: 4499645, p_value: 0.813125, passed: True, notes: Bits: 9000000, pi: 0.5002, Runs: 4499645
 
 [Visual & Transform Outputs]
-  Bit Visualization: ./sigil_benchmark_output\PRNG_bit_visualization_2896x2896.png
-  FFT Spectrum Plot: ./sigil_benchmark_output\PRNG_fft_spectrum_2896x2896.png
-  Wavelet Decomp Plot: ./sigil_benchmark_output\PRNG_wavelet_decomp_2896x2896.png
+  Bit Visualization: ./sigil_benchmark_output\PRNG_bit_visualization_3000x3000.png
+  FFT Spectrum Plot: ./sigil_benchmark_output\PRNG_fft_spectrum_3000x3000.png
+  Wavelet Decomp Plot: ./sigil_benchmark_output\PRNG_wavelet_decomp_3000x3000.png
 
 === End of Summary ===

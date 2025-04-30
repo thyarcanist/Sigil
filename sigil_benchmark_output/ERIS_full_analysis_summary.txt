@@ -3,13 +3,13 @@ Source File: Unknown File
 ---------------------------------------------
 
 [Statistical Tests]
-  Frequency (Monobit): s_obs: 1.333421, p_value: 0.182394, n_zeros: 4196235, n_ones: 4192373, passed: True, notes: Bits: 8388608, Zeros: 4196235, Ones: 4192373
-  Chi-Square (Bytes):  chisq_stat: 292.354004, p_value: 0.053836, dof: 255, passed: True, notes: Bytes: 1048576
-  Runs Test:           v_n_obs: 4191490, p_value: 0.052071, passed: True, notes: Bits: 8388608, pi: 0.4998, Runs: 4191490
+  Frequency (Monobit): s_obs: 0.680667, p_value: 0.496082, n_zeros: 4498979, n_ones: 4501021, passed: True, notes: Bits: 9000000, Zeros: 4498979, Ones: 4501021
+  Chi-Square (Bytes):  chisq_stat: 275.526485, p_value: 0.180107, dof: 255, passed: True, notes: Bytes: 1125000
+  Runs Test:           v_n_obs: 4500996, p_value: 0.506591, passed: True, notes: Bits: 9000000, pi: 0.5001, Runs: 4500996
 
 [Visual & Transform Outputs]
-  Bit Visualization: ./sigil_benchmark_output\ERIS_full_bit_visualization_2896x2896.png
-  FFT Spectrum Plot: ./sigil_benchmark_output\ERIS_full_fft_spectrum_2896x2896.png
-  Wavelet Decomp Plot: ./sigil_benchmark_output\ERIS_full_wavelet_decomp_2896x2896.png
+  Bit Visualization: ./sigil_benchmark_output\ERIS_full_bit_visualization_3000x3000.png
+  FFT Spectrum Plot: ./sigil_benchmark_output\ERIS_full_fft_spectrum_3000x3000.png
+  Wavelet Decomp Plot: ./sigil_benchmark_output\ERIS_full_wavelet_decomp_3000x3000.png
 
 === End of Summary ===
