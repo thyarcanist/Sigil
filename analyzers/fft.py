@@ -1,11 +1,12 @@
 # fft.py
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy.fft import fft2
+from numpy.fft import fft2, fftshift
 
 def fft_log_magnitude(bit_array_2d):
-    fft_result = np.abs(fft2(bit_array_2d))
-    log_mag = np.log1p(fft_result)
+    fft_result = fft2(bit_array_2d)
+    fft_shifted = fftshift(fft_result)
+    log_mag = np.log1p(np.abs(fft_shifted))
     return log_mag
 
 def plot_fft(log_mag, title="FFT Magnitude Spectrum"):

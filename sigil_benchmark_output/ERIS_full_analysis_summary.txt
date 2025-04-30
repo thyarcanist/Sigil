@@ -1,0 +1,15 @@
+=== SIGIL Analysis Summary for: ERIS:full ===
+Source File: Unknown File
+---------------------------------------------
+
+[Statistical Tests]
+  Frequency (Monobit): s_obs: 0.623232, p_value: 0.533132, n_zeros: 4608946, n_ones: 4607054, passed: True, notes: Bits: 9216000, Zeros: 4608946, Ones: 4607054
+  Chi-Square (Bytes):  chisq_stat: 288.166667, p_value: 0.075129, dof: 255, passed: True, notes: Bytes: 1152000
+  Runs Test:           v_n_obs: 4608358, p_value: 0.813447, passed: True, notes: Bits: 9216000, pi: 0.4999, Runs: 4608358
+
+[Visual & Transform Outputs]
+  Bit Visualization: ./sigil_benchmark_output\ERIS_full_bit_visualization_3035x3035.png
+  FFT Spectrum Plot: ./sigil_benchmark_output\ERIS_full_fft_spectrum_3035x3035.png
+  Wavelet Decomp Plot: ./sigil_benchmark_output\ERIS_full_wavelet_decomp_3035x3035.png
+
+=== End of Summary ===

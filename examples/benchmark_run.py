@@ -231,22 +231,119 @@ def run_analysis_on_data(data_bytes: bytes, label: str, output_dir: str, width: 
         if bit_array is not None:
             try:
                 logging.info("Performing Wavelet analysis...")
-                wavelet_result = wavelet_decompose(bit_array) # Potential MemoryError here
-                wavelet_plot_path = os.path.join(output_dir, f"{safe_label}_wavelet_decomp_{width}x{height}.png") # Sanitize label
+                wavelet_plot_path = os.path.join(output_dir, f"{safe_label}_wavelet_decomp_{width}x{height}.png") # Use safe_label
                 import matplotlib.pyplot as plt
-                plt.figure(figsize=(8, 8))
-                plt.imshow(wavelet_result, cmap='gray')
-                # plt.title(f"Wavelet Decomposition - {label}") # Original title
-                # Match generate_bit_viz title (assuming db4, 4 levels from analyzer)
-                wavelet_type = 'db4'
-                decomp_levels = 4
-                plt.title(f"Wavelet Decomposition ({wavelet_type}, {decomp_levels} Levels) - {label}", fontsize=14)
-                plt.savefig(wavelet_plot_path)
-                plt.close()
+                import pywt # <<< Import pywt here
+
+                # --- Replicate generate_bit_viz Wavelet logic --- #
+                wavelet_type = 'db4' # Match generate_bit_viz
+                decomp_levels = 4    # Match generate_bit_viz
+                
+                # Ensure image dimensions are suitable for chosen levels (borrowed from generate_bit_viz)
+                min_dim = min(bit_array.shape)
+                max_levels = pywt.dwtn_max_level(bit_array.shape, wavelet_type)
+                actual_levels = min(decomp_levels, max_levels)
+                if actual_levels < decomp_levels:
+                    logging.warning(f"Image size only supports {actual_levels} decomposition levels, not {decomp_levels}. Proceeding with {actual_levels}.")
+                if actual_levels == 0:
+                    raise ValueError("Image too small for wavelet decomposition.")
+
+                # Perform the 2D wavelet decomposition directly
+                coeffs = pywt.wavedec2(bit_array.astype(float), wavelet=wavelet_type, level=actual_levels)
+
+                # --- Plotting logic from plot_wavelet_coeffs --- #
+                fig_wavelet, ax_wavelet = plt.subplots(figsize=(10, 10)) # Match size
+
+                # Normalize coefficients (borrowed from generate_bit_viz)
+                max_abs_val = 0
+                for i in range(1, actual_levels + 1):
+                    for detail_coeff in coeffs[i]: # LH, HL, HH
+                        current_max = np.max(np.abs(detail_coeff))
+                        if not np.isnan(current_max) and not np.isinf(current_max):
+                             max_abs_val = max(max_abs_val, current_max)
+                if max_abs_val == 0: max_abs_val = 1 # Avoid division by zero
+
+                # Get dimensions (borrowed from generate_bit_viz)
+                final_approx = coeffs[0]
+                approx_max = np.max(np.abs(final_approx))
+                if approx_max == 0: approx_max = 1 # Avoid division by zero if approx is all zero
+                
+                rows, cols = final_approx.shape
+
+                # Create canvas (borrowed from generate_bit_viz)
+                # Ensure canvas matches potentially smaller rows/cols if levels reduced
+                if rows > 0 and cols > 0:
+                    canvas_rows = rows * (2**actual_levels)
+                    canvas_cols = cols * (2**actual_levels)
+                    # Check if canvas size matches bit_array dimensions, adjust if necessary
+                    if canvas_rows > height or canvas_cols > width:
+                         logging.warning(f"Wavelet canvas size ({canvas_rows}x{canvas_cols}) exceeds image size ({height}x{width}) due to level reduction. Clipping canvas.")
+                         canvas_rows = height
+                         canvas_cols = width
+                         # We might need to adjust coefficient placement logic if clipped - simpler to ensure image size allows levels
+
+                    canvas = np.zeros((canvas_rows, canvas_cols))
+
+                    # Place approximation (borrowed from generate_bit_viz)
+                    canvas[0:rows, 0:cols] = final_approx / approx_max # Scale LL individually
+
+                    current_row_offset = 0
+                    current_col_offset = cols
+                    for level in range(1, actual_levels + 1):
+                        lh, hl, hh = coeffs[level]
+                        level_rows, level_cols = lh.shape
+
+                        # Check bounds before placing coefficients
+                        if current_row_offset + 2 * level_rows <= canvas_rows and \
+                           current_col_offset + level_cols <= canvas_cols:
+                           
+                            # Normalize detail coefficients before placing
+                            lh_norm = lh / max_abs_val
+                            hl_norm = hl / max_abs_val
+                            hh_norm = hh / max_abs_val
+
+                            # Place LH
+                            canvas[current_row_offset : current_row_offset + level_rows, 
+                                   current_col_offset : current_col_offset + level_cols] = lh_norm
+                            # Place HL
+                            canvas[current_row_offset + level_rows : current_row_offset + 2 * level_rows, 
+                                   current_col_offset - level_cols : current_col_offset] = hl_norm
+                            # Place HH
+                            canvas[current_row_offset + level_rows : current_row_offset + 2 * level_rows, 
+                                   current_col_offset : current_col_offset + level_cols] = hh_norm
+
+                            # Update offsets (borrowed from generate_bit_viz)
+                            current_col_offset += level_cols
+                        else:
+                             logging.warning(f"Skipping coefficient placement for level {level} due to canvas boundary.")
+                             break # Stop placing if out of bounds
+                    
+                    # Display the canvas (borrowed from generate_bit_viz)
+                    im = ax_wavelet.imshow(canvas, cmap='gray', vmin=-1, vmax=1)
+                    ax_wavelet.set_xticks([])
+                    ax_wavelet.set_yticks([])
+                    # ax_wavelet.set_title(f'{actual_levels}-Level Wavelet Decomposition') # Original helper title
+                    fig_wavelet.suptitle(f"Wavelet Decomposition ({wavelet_type}, {actual_levels} Levels) - {label}", fontsize=14) # Match generate_bit_viz title
+
+                else:
+                     logging.error(f"Wavelet approximation dimensions are zero for {label}. Cannot create canvas.")
+                     ax_wavelet.text(0.5, 0.5, 'Wavelet analysis failed (zero dimensions)', ha='center', va='center')
+
+                # --- End Plotting Logic --- #
+                
+                # plt.figure(figsize=(8, 8))
+                # plt.imshow(wavelet_result, cmap='gray')
+                # plt.title(f"Wavelet Decomposition ({wavelet_type}, {decomp_levels} Levels) - {label}", fontsize=14)
+                plt.savefig(wavelet_plot_path, bbox_inches='tight', dpi=150) # Save the constructed figure
+                plt.close(fig_wavelet) # Close the wavelet figure
+                # --- End Wavelet Logic Replication ---
+
                 analysis_results['wavelet_path'] = wavelet_plot_path # Record path only on success
                 logging.info(f"Wavelet decomposition saved to: {wavelet_plot_path}")
             except MemoryError:
                 logging.error(f"MemoryError during Wavelet analysis/plotting for {label}.")
+            except ImportError:
+                 logging.error("PyWavelets library not found. Skipping Wavelet analysis. Try 'pip install PyWavelets'")
             except Exception as e_wavelet:
                  logging.error(f"Error during Wavelet analysis for {label}: {e_wavelet}")
         # else:

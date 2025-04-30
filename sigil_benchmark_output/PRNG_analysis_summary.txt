@@ -1,0 +1,15 @@
+=== SIGIL Analysis Summary for: PRNG ===
+Source File: Unknown File
+----------------------------------------
+
+[Statistical Tests]
+  Frequency (Monobit): s_obs: 0.621915, p_value: 0.533998, n_zeros: 4608944, n_ones: 4607056, passed: True, notes: Bits: 9216000, Zeros: 4608944, Ones: 4607056
+  Chi-Square (Bytes):  chisq_stat: 271.449333, p_value: 0.228843, dof: 255, passed: True, notes: Bytes: 1152000
+  Runs Test:           v_n_obs: 4607523, p_value: 0.753427, passed: True, notes: Bits: 9216000, pi: 0.4999, Runs: 4607523
+
+[Visual & Transform Outputs]
+  Bit Visualization: ./sigil_benchmark_output\PRNG_bit_visualization_3035x3035.png
+  FFT Spectrum Plot: ./sigil_benchmark_output\PRNG_fft_spectrum_3035x3035.png
+  Wavelet Decomp Plot: ./sigil_benchmark_output\PRNG_wavelet_decomp_3035x3035.png
+
+=== End of Summary ===
