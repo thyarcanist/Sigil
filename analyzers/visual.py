@@ -3,7 +3,7 @@ from PIL import Image
 import math
 import os
 # Import the helper function
-from ..utils.helpers import bytes_to_bit_array 
+from utils.helpers import bytes_to_bit_array
 
 def generate_bit_visualization(data: bytes, width: int, height: int, output_path: str = None, scale: int = 1):
     """Generates a monochrome bitmap visualization of the entropy data.

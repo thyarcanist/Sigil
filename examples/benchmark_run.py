@@ -4,23 +4,29 @@ import numpy as np
 import math # Need math for ceiling calculation
 import random # Need standard PRNG
 import logging # Added for better status messages
+from typing import Optional # <--- Add this import
 
 # --- Path Setup ---
 # Adjust path to import from the parent directory (SIGIL)
 # This assumes benchmark_run.py is in SIGIL/examples/
-script_dir = os.path.dirname(os.path.abspath(__file__))
-sigil_dir = os.path.dirname(script_dir)
-# Go one level higher to reach the project root containing the .env file
-project_root = os.path.dirname(sigil_dir)
-sys.path.insert(0, sigil_dir)
-# Also add project root for dotenv loading
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
-# --------------------
+# script_dir = os.path.dirname(os.path.abspath(__file__))
+# sigil_dir = os.path.dirname(script_dir)
+# # Go one level higher to reach the project root containing the .env file
+# project_root = os.path.dirname(sigil_dir)
+# sys.path.insert(0, sigil_dir)
+# # Also add project root for dotenv loading
+# if project_root not in sys.path:
+#     sys.path.insert(0, project_root)
+# # --------------------
 
 # --- Configure Logging ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 # -------------------------
+
+# Explicitly add project root to sys.path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 # --- Import SIGIL components ---
 # No change needed here initially, but add API client later
