@@ -2,3 +2,4 @@
 __pycache__
 fft/
 src/
+sigil_benchmark_output/
