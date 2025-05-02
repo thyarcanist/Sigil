@@ -72,6 +72,36 @@ DATA_SIZE_BYTES = 1152000 # Match the byte size from generate_bit_viz command
 OUTPUT_DIR = "./sigil_benchmark_output"
 # -----------------
 
+# --- Argument Parsing (Added/Modified) ---
+parser = argparse.ArgumentParser(description="Run SIGIL benchmark analyses on entropy sources.")
+parser.add_argument(
+    '--local-engine',
+    action='store_true',
+    help='Use local QuantumTrueRandomGenerator for ERIS sources instead of API calls.'
+)
+parser.add_argument(
+    '--dims',
+    type=str,
+    default='3035',
+    choices=['2896', '3000', '3035'],
+    help='Set the dimensions for visualization (2896, 3000, or 3035). Default: 3035.'
+)
+args = parser.parse_args()
+
+# Set dimensions and data size based on args
+if args.dims == '2896':
+    WIDTH, HEIGHT = 2896, 2896
+    DATA_SIZE_BYTES = 1048576 # 1 MiB
+elif args.dims == '3000':
+    WIDTH, HEIGHT = 3000, 3000
+    DATA_SIZE_BYTES = 1125000
+else: # Default '3035'
+    WIDTH, HEIGHT = 3035, 3035
+    DATA_SIZE_BYTES = 1152000
+
+logging.info(f"Using dimensions: {WIDTH}x{HEIGHT}, Data size: {DATA_SIZE_BYTES} bytes")
+# --- End Argument Parsing ---
+
 def get_entropy_data(source_name: str, size_bytes: int, use_local_engine: bool = False) -> Optional[bytes]:
     """Fetches or generates entropy data based on the source name.
 
