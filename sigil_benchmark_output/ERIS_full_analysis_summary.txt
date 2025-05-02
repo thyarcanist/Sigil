@@ -1,11 +1,11 @@
 === SIGIL Analysis Summary for: ERIS:full ===
-Source File: Unknown File
+Source File: Unknown File | WEB API
 ---------------------------------------------
 
 [Statistical Tests]
-  Frequency (Monobit): s_obs: 0.812310, p_value: 0.416614, n_zeros: 4606767, n_ones: 4609233, passed: True, notes: Bits: 9216000, Zeros: 4606767, Ones: 4609233
-  Chi-Square (Bytes):  chisq_stat: 267.432889, p_value: 0.283917, dof: 255, passed: True, notes: Bytes: 1152000
-  Runs Test:           v_n_obs: 4606596, p_value: 0.355097, passed: True, notes: Bits: 9216000, pi: 0.5001, Runs: 4606596
+  Frequency (Monobit): s_obs: 0.851180, p_value: 0.394670, n_zeros: 4606708, n_ones: 4609292, passed: True, notes: Bits: 9216000, Zeros: 4606708, Ones: 4609292
+  Chi-Square (Bytes):  chisq_stat: 270.166222, p_value: 0.245700, dof: 255, passed: True, notes: Bytes: 1152000
+  Runs Test:           v_n_obs: 4605144, p_value: 0.059929, passed: True, notes: Bits: 9216000, pi: 0.5001, Runs: 4605144
 
 [Visual & Transform Outputs]
   Bit Visualization: ./sigil_benchmark_output\ERIS_full_bit_visualization_3035x3035.png

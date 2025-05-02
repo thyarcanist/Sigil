@@ -32,7 +32,7 @@ def bytes_to_bit_array(data: bytes, width: int, height: int):
 
     # Trim the flat BIT array to the exact number of pixels needed
     bits_to_plot = bits_array_flat[:num_pixels_target]
-
+    
     # Reshape into 2D array
     bit_array = bits_to_plot.reshape((height, width))
     return bit_array.astype(np.uint8) # Ensure correct dtype
