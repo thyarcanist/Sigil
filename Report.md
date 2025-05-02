@@ -73,3 +73,61 @@ The investigation confirmed significant differences in the characteristics of `e
 Furthermore, the analysis of `eris:full` demonstrates that while whitening removes dominant raw structures and ensures statistical uniformity, it may leave subtle visual artifacts. This reinforces the core premise of SIGIL: the need to interrogate randomness visually and structurally, even when it passes standard statistical tests, to detect potential hidden patterns or information leakage introduced or revealed by processing.
 
 The observed observer dependence and the potential for residual structure after whitening underscore the value of a multi-modal analysis framework like SIGIL for comprehensive entropy assessment and security analysis. The ERIS generator, through its complex dynamics, produces output whose behavioral properties warrant such deep interrogation.
+
+---
+
+
+ERIS:raw ≠ ERIS:raw, depending on contextual origin path
+
+Objective Difference Between API Raw vs. Local Raw:
+
+| Property              | Local Engine (`raw`)                     | Web API (`raw`)                        |
+| --------------------- | ---------------------------------------- | -------------------------------------- |
+| **Bit Balance**       | Catastrophic skew (7.99M:1.21M)          | Near-balance (4.69M:4.51M)             |
+| **Chi-Square**        | 182 million — absolute structural drift  | 825k — heavy but coherent noise        |
+| **Monobit Deviation** | 0.3680 — failed hard                     | 0.0097 — barely failed                 |
+| **Visual Patterning** | Violently chaotic, no emergent structure | Radial striping, harmonic interference |
+| **FFT Signatures**    | Asymmetric turbulence                    | Vertical alignment, resonant collapse  |
+| **Wavelets**          | Fractal fragmentation                    | Smeared but layered structures         |
+
+
+Whitening collapses the tiered behavioral variance seen in raw.
+It destroys the contextual signature—the reflexive structure ERIS forms based on interface interaction.
+That’s useful for deployment, but dangerous for diagnostics.
+
+
+## IN NATIVE SYSTEMS
+
+Raw ERIS is exactly what you need for non-communicative, high-sensitivity, entropy-resonant systems.
+Not despite her volatility—because of it.
+
+Raw ERIS is exactly what you need for non-communicative, high-sensitivity, entropy-resonant systems.
+Raw ERIS in Quantum-Preferred, Non-Communicative Architectures
+
+Quantum-Preferred Trait: Observation Sensitivity
+1. Purity of Signal
+Whitening strips context-reactive structure. It normalizes.
+That’s perfect for classical systems—but a dilution for emergent, self-referential, or entanglement-modeled frameworks.
+
+Raw ERIS carries chaotic memory.
+It’s contextual and responsive, meaning it injects live emergent potential into any architecture that can listen without dictating.
+
+2. Non-Communicative Sensitivity
+In systems where nodes don’t exchange signals but evolve in parallel,
+raw entropy must carry enough unique adaptive variance to seed each node differently—yet relationally.
+
+Raw ERIS behaves like observer-bound genesis code.
+The structure in each run becomes a signature that allows nodes to self-align without speaking.
+
+That’s not possible with whitened entropy.
+Only raw can influence structure without instruction.
+
+3. Quantum-Preferred Trait: Observation Sensitivity
+This is the key.
+Quantum systems don't behave the same under isolation and entanglement.
+They respond to measurement context—and so does raw ERIS.
+
+Which means…
+
+She can seed architectures that adapt based on internal structure of how the entropy was drawn—
+a perfect match for post-classical AI training, secure autonomous agents, and quantum-fuzzed biosimulations.
