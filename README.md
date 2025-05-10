@@ -33,13 +33,12 @@ The framework is organized as follows:
 *   `report/`: Generates summaries, scores, and visualizations from the analysis modules.
 *   `utils/`: Shared helper functions and tools (entropy scoring, transform helpers).
 *   `examples/`: Demonstrates usage and benchmarking against different entropy sources.
-*   `decomposition/`: *(Note: The user provided `decomposition/visual.py`. This might be intended to be under `analyzers/`. Confirm structure if needed.)*
 
 ## Core Features (v0.1 - Planned)
 
 *   **FFT Analysis:** Log-magnitude spectrum visualization (`analyzers/fft.py`).
 *   **Wavelet Decomposition:** Multi-level wavelet analysis (`analyzers/wavelet.py`).
-*   **Visual Rendering:** Bit visualization generation (`decomposition/visual.py` or `analyzers/visual.py`).
+*   **Visual Rendering:** Bit visualization generation (`analyzers/visual.py`).
 *   **Statistical Tests:** Basic frequency, runs, chi-square tests (`analyzers/stats.py`).
 *   **Entropy Input Loading:** Loading data from files/streams (`loaders/entropy_input.py`).
 *   **Basic Reporting:** Summary generation (`report/summary.py`).
